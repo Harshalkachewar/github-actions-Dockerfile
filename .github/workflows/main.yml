@@ -1,4 +1,4 @@
-name: Docker CI Learning - KUCL
+name: Docker CI/CD Pipeline - KUCL
 
 on:
   push:
@@ -31,5 +31,19 @@ jobs:
     runs-on: [self-hosted, kucl22]
 
     steps:
+      - name: Ensure SSH Key Permissions
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.D_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy Docker Image
-        run: ssh ${{ secrets.S_USER }}@${{ secrets.D_HOST }} "docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions && docker run -d --name kucl_container ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions"
+        run: |
+          ssh -i ~/.ssh/id_rsa ${{ secrets.S_USER }}@${{ secrets.D_HOST }} << 'EOF'
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions
+            docker stop kucl_container || true
+            docker rm kucl_container || true
+            docker run -d --name kucl_container ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions
+          EOF
