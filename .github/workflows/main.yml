@@ -32,10 +32,4 @@ jobs:
 
     steps:
       - name: Deploy Docker Image
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.S_USER }}@${{ secrets.D_HOST }} "
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions &&
-            docker stop kucl_container || true &&
-            docker rm kucl_container || true &&
-            docker run -d --name kucl_container ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions
-          "
+        run: ssh ${{ secrets.S_USER }}@${{ secrets.D_HOST }} "docker pull ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions && docker run -d --name kucl_container ${{ secrets.DOCKERHUB_USERNAME }}/kucl22:actions"
