@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, kucl22]
 
     steps:
       - name: Deploy Docker Image
